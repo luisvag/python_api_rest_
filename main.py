@@ -1,4 +1,10 @@
+from faker import Faker
+from faker.providers import phone_number, internet
 from flask import Flask, jsonify, request
+
+fake = Faker()
+fake.add_provider(phone_number)
+fake.add_provider(internet)
 
 """
 GET = OBTENER INFO
@@ -11,22 +17,54 @@ DELETE = DELETE
 #empizo mi server
 app = Flask(__name__)
 
+db = []
+
+# db = ['luisito', 
+# 'ledgermayne']
+
+# db = []
+
 #creo funcion para obtener la data de un usuario(2007)
-@app.route("/get-usuario/<usuario_id>")
-def get_user(usuario_id):
-#/get-usuario/2007  
-    usuario_data = {
-        'usuario_id': usuario_id,
-        'name' : 'Antonio Banderas',
-        'correo': 'antonioban@outlook.com'
-        }
+@app.route("/get-user/<username>")
+def get_user(username):
+
+    for user in db:
+        if username == user["name"]:
+            return jsonify(user), 200
 
     #query parameter,valor extra
-    extra = request.args.get('extra')
-    if extra:
-        usuario_data['extra'] = extra
+    # extra = request.args.get('extra')
+    # if extra:
+    #     usuario_data['extra'] = extra
 
-    return jsonify(usuario_data), 200
+    # return jsonify(usuario_data), 200
 
+@app.route('/create-user', methods=['POST'])
+
+def create_user():
+    data = request.get_json()
+
+    if data in db:
+        return f"el usuario {data['name']} ya existe", 400
+
+    
+    if data not in db:
+        db.append(data)
+        return f'Bienvenido {data["name"]}', 201
+
+@app.route('/get-users')
+def get_users():
+    return db, 200
+
+@app.route('/reset-pass/<username>', methods=["PATCH"])
+def reset_pass(username):
+    for user in db:
+        if username == user["name"]:
+            new_pass = request.get_json()
+            user["password"] = new_pass["password"]
+            return str(user["password"]), 200
+
+
+        
 if __name__=="__main__":
     app.run(debug=True)
