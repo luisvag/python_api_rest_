@@ -12,6 +12,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import axios from 'axios';
 
 function Copyright(props: any) {
   return (
@@ -33,10 +34,15 @@ export default function SignUp() {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
+
+    const user = {
+      name: data.get('firstName'),
       password: data.get('password'),
-    });
+    }
+
+    console.log(user);
+
+    axios.post(`http://127.0.0.1:5000/create-user`, user)
   };
 
   return (
