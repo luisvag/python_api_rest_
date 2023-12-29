@@ -12,6 +12,7 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Link } from "react-router-dom";
+import axios from 'axios';
 
 function Copyright(props: any) {
   return (
@@ -30,15 +31,19 @@ function Copyright(props: any) {
 const defaultTheme = createTheme();
 
 export default function SignIn() {
+
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
 
-    
+    const user = {
+      username: data.get('username'),
+      password: data.get('password'),
+    }
+    console.log(user);
+
+    axios.get(`http://127.0.0.1:5000/get-user/${user.username}`)
   };
 
   return (
@@ -60,7 +65,7 @@ export default function SignIn() {
             Sign in
           </Typography>
           <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-            <TextField
+            {/* <TextField
               margin="normal"
               required
               fullWidth
@@ -68,6 +73,16 @@ export default function SignIn() {
               label="Email Address"
               name="email"
               autoComplete="email"
+              autoFocus
+            /> */}
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="username"
+              label="Username"
+              name="username"
+              autoComplete="username"
               autoFocus
             />
             <TextField
