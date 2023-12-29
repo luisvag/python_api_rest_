@@ -1,6 +1,7 @@
 from faker import Faker
 from faker.providers import phone_number, internet
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 
 fake = Faker()
 fake.add_provider(phone_number)
@@ -16,6 +17,7 @@ DELETE = DELETE
 
 #empizo mi server
 app = Flask(__name__)
+CORS(app)
 
 db = []
 
