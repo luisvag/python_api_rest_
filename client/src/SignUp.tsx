@@ -9,12 +9,12 @@ import { Link } from 'react-router-dom'
 import Grid from '@mui/material/Grid'
 import Box from '@mui/material/Box'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
-import Typography from '@mui/material/Typography'
+import Typography, { TypographyProps } from '@mui/material/Typography'
 import Container from '@mui/material/Container'
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 import axios from 'axios'
 
-function Copyright(props: any) {
+function Copyright(props: TypographyProps) {
     return (
         <Typography
             variant="body2"
@@ -36,7 +36,7 @@ function Copyright(props: any) {
 const defaultTheme = createTheme()
 
 export default function SignUp() {
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault()
         const data = new FormData(event.currentTarget)
 
