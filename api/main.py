@@ -41,22 +41,18 @@ def get_user(username):
 
     # return jsonify(usuario_data), 200
 
+
 @app.route('/create-user', methods=['POST'])
 
 def create_user():
     data = request.get_json()
 
     if data in db:
-        return f"el usuario {data['name']} ya existe", 400
+        return f"el usuario {data['name']} o el correo{data["correo"]} ya existe", 400
 
-    
     if data not in db:
         db.append(data)
         return f'Bienvenido {data["name"]}', 201
-
-@app.route('/get-users')
-def get_users():
-    return db, 200
 
 @app.route('/reset-pass/<username>', methods=["PATCH"])
 def reset_pass(username):
@@ -66,7 +62,9 @@ def reset_pass(username):
             user["password"] = new_pass["password"]
             return str(user["password"]), 200
 
-
+@app.route('/get-users')
+def get_users():
+    return db, 200
         
 if __name__=="__main__":
     app.run(debug=True)
