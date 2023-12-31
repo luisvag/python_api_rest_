@@ -2,6 +2,7 @@ from faker import Faker
 from faker.providers import phone_number, internet
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from db import mysql
 
 fake = Faker()
 fake.add_provider(phone_number)
@@ -21,10 +22,26 @@ CORS(app)
 
 db = []
 
-# db = ['luisito', 
-# 'ledgermayne']
+@app.route('/get-users')
+def get_users():
+    connection = mysql()
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM `usuarios`")
+        users = cursor.fetchall()
+    connection.close()
 
-# db = []
+    dictList = []
+
+    for userTuple in users:
+        user = {}
+        user["id"] = userTuple[0]
+        user["username"] = userTuple[1]
+        user["password"] = userTuple[2]
+        user["email"] = userTuple[3]
+
+        dictList.append(user)
+
+    return jsonify(dictList), 200
 
 #creo funcion para obtener la data de un usuario(2007)
 @app.route("/get-user/<username>")
@@ -33,14 +50,6 @@ def get_user(username):
     for user in db:
         if username == user["name"]:
             return jsonify(user), 200
-
-    #query parameter,valor extra
-    # extra = request.args.get('extra')
-    # if extra:
-    #     usuario_data['extra'] = extra
-
-    # return jsonify(usuario_data), 200
-
 
 @app.route('/create-user', methods=['POST'])
 
@@ -53,7 +62,7 @@ def create_user():
     if data not in db:
         db.append(data)
         return f'Bienvenido {data["name"]}', 201
-
+    
 @app.route('/reset-pass/<username>', methods=["PATCH"])
 def reset_pass(username):
     for user in db:
@@ -61,10 +70,6 @@ def reset_pass(username):
             new_pass = request.get_json()
             user["password"] = new_pass["password"]
             return str(user["password"]), 200
-
-@app.route('/get-users')
-def get_users():
-    return db, 200
         
 if __name__=="__main__":
     app.run(debug=True)
