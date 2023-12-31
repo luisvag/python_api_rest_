@@ -60,16 +60,26 @@ def get_user(id):
     return jsonify(user), 200
 
 @app.route('/create-user', methods=['POST'])
-
 def create_user():
     data = request.get_json()
+    connection = mysql()
+    with connection.cursor() as cursor:
+        cursor.execute(f"SELECT * FROM `usuarios` WHERE id = {data["id"]}")
+        existing_user = cursor.fetchone()
+        if existing_user:
+            connection.close()
+            return f"User already exist", 400
+        
+        cursor.execute(f"INSERT INTO `usuarios` (`id`, `username`, `password`, `email`) VALUES ('{data["id"]}', '{data["username"]}', '{data["password"]}', '{data["email"]}')")
 
-    if data in db:
-        return f"el usuario {data['name']} o el correo{data["correo"]} ya existe", 400
+    connection.commit()
+    connection.close()
 
-    if data not in db:
-        db.append(data)
-        return f'Bienvenido {data["name"]}', 201
+    return f'Welcome {data["username"]}', 201
+    
+@app.route('/delete-user', methods=["DELETE"])
+def delete_user():
+    return None, 200
     
 @app.route('/reset-pass/<username>', methods=["PATCH"])
 def reset_pass(username):
