@@ -6,15 +6,11 @@ Project aiming to learn about backend/frontend process to login
 
 #### Get all users
 
-```http
-  GET /users
-```
+`GET /users`
 
 #### Get user info
 
-```http
-  GET /user/<id>
-```
+`GET /user/{id}`
 
 | Parameter | Type     | Description                       |
 | :-------- | :------- | :-------------------------------- |
@@ -22,9 +18,7 @@ Project aiming to learn about backend/frontend process to login
 
 #### Register new user
 
-```http
-  POST /create-user
-```
+`POST /create-user`
 
 Example JSON body:
 
@@ -37,9 +31,7 @@ Example JSON body:
 
 #### Change user password
 
-```http
-  PATCH /reset-password
-```
+`PATCH /reset-password`
 
 Example JSON body:
 
