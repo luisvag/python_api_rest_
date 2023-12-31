@@ -44,12 +44,20 @@ def get_users():
     return jsonify(dictList), 200
 
 #creo funcion para obtener la data de un usuario(2007)
-@app.route("/get-user/<username>")
-def get_user(username):
+@app.route("/get-user/<id>")
+def get_user(id):
+    connection = mysql()
+    with connection.cursor() as cursor:
+        cursor.execute(f"SELECT * FROM `usuarios` WHERE id = {id}")
+        userTuple = cursor.fetchone()
+    connection.close()
 
-    for user in db:
-        if username == user["name"]:
-            return jsonify(user), 200
+    user = {}
+    user["id"] = userTuple[0]
+    user["username"] = userTuple[1]
+    user["email"] = userTuple[2]
+
+    return jsonify(user), 200
 
 @app.route('/create-user', methods=['POST'])
 
