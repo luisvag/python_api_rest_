@@ -1,8 +1,9 @@
 from faker import Faker
 from faker.providers import phone_number, internet
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, session
 from flask_cors import CORS
-from db import mysql
+from db import *
+from werkzeug.security import check_password_hash
 
 fake = Faker()
 fake.add_provider(phone_number)
@@ -16,13 +17,13 @@ DELETE = DELETE
 
 """
 
-#empizo mi server
 app = Flask(__name__)
 CORS(app)
 
 db = []
 
-@app.route('/get-users')
+
+@app.route("/get-users")
 def get_users():
     connection = mysql()
     with connection.cursor() as cursor:
@@ -43,7 +44,7 @@ def get_users():
 
     return jsonify(dictList), 200
 
-#creo funcion para obtener la data de un usuario(2007)
+
 @app.route("/get-user/<id>")
 def get_user(id):
     connection = mysql()
@@ -59,35 +60,70 @@ def get_user(id):
 
     return jsonify(user), 200
 
-@app.route('/create-user', methods=['POST'])
+
+@app.route("/create-user", methods=["POST"])
 def create_user():
     data = request.get_json()
     connection = mysql()
     with connection.cursor() as cursor:
-        cursor.execute(f"SELECT * FROM `usuarios` WHERE id = {data["id"]}")
+        cursor.execute(f"SELECT * FROM `usuarios` WHERE id = {data['id']}")
         existing_user = cursor.fetchone()
         if existing_user:
             connection.close()
             return f"User already exist", 400
-        
-        cursor.execute(f"INSERT INTO `usuarios` (`id`, `username`, `password`, `email`) VALUES ('{data["id"]}', '{data["username"]}', '{data["password"]}', '{data["email"]}')")
+
+        cursor.execute(
+            f"INSERT INTO `usuarios` (`id`, `username`, `password`, `email`) VALUES ('{data['id']}', '{data['username']}', '{data['password']}', '{data['email']}')"
+        )
 
     connection.commit()
     connection.close()
 
     return f'Welcome {data["username"]}', 201
-    
-@app.route('/delete-user', methods=["DELETE"])
+
+
+@app.route("/login", methods=["POST"])
+def login():
+    body = request.get_json()
+
+    _username = body["username"]
+    _password = body["password"]
+
+    if _username and _password:
+        connection = mysql()
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT username, password FROM `usuarios`")
+            todas_las_cuentas = cursor.fetchall()
+        connection.close()
+
+        correct_usuario = None
+
+        for user in todas_las_cuentas:
+            if _username in user:
+                correct_usuario = user
+
+        if not correct_usuario:
+            return jsonify({"message": "Invalid credentials"}), 400
+
+        if _password == correct_usuario[1]:
+            return jsonify({"message": "logged in"}), 200
+        else:
+            return jsonify({"message": "Invalid credentials"}), 400
+
+
+@app.route("/delete-user", methods=["DELETE"])
 def delete_user():
     return None, 200
-    
-@app.route('/reset-pass/<username>', methods=["PATCH"])
+
+
+@app.route("/reset-pass/<username>", methods=["PATCH"])
 def reset_pass(username):
     for user in db:
         if username == user["name"]:
             new_pass = request.get_json()
             user["password"] = new_pass["password"]
             return str(user["password"]), 200
-        
-if __name__=="__main__":
+
+
+if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
