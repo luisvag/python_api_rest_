@@ -1,13 +1,13 @@
 from faker import Faker
-from faker.providers import phone_number, internet
+from faker.providers import phone_number, internet, misc
 from flask import Flask, jsonify, request, session
 from flask_cors import CORS
 from db import *
-from werkzeug.security import check_password_hash
 
 fake = Faker()
 fake.add_provider(phone_number)
 fake.add_provider(internet)
+fake.add_provider(misc)
 
 """
 GET = OBTENER INFOs
@@ -63,23 +63,29 @@ def get_user(id):
 
 @app.route("/create-user", methods=["POST"])
 def create_user():
-    data = request.get_json()
+    body = request.get_json()
+
+    _username = body["username"]
+    _password = body["password"]
+    _email = body["email"]
+    _token = fake.uuid4()
+
     connection = mysql()
     with connection.cursor() as cursor:
-        cursor.execute(f"SELECT * FROM `usuarios` WHERE id = {data['id']}")
+        cursor.execute(f"SELECT * FROM `usuarios` WHERE username = '{_username}'")
         existing_user = cursor.fetchone()
         if existing_user:
             connection.close()
-            return "User already exist", 400
+            return jsonify({"message": "User already exist"}), 400
 
         cursor.execute(
-            f"INSERT INTO `usuarios` (`id`, `username`, `password`, `email`) VALUES ('{data['id']}', '{data['username']}', '{data['password']}', '{data['email']}')"
+            f"INSERT INTO `usuarios` (`id`, `username`, `password`, `email`, `token`) VALUES (NULL, '{_username}', '{_password}', '{_email}', '{_token}')"
         )
 
     connection.commit()
     connection.close()
 
-    return f'Welcome {data["username"]}', 201
+    return jsonify({"message": "user created"}), 201
 
 
 @app.route("/login", methods=["POST"])
@@ -92,8 +98,9 @@ def login():
     if _username and _password:
         connection = mysql()
         with connection.cursor() as cursor:
-            cursor.execute("SELECT username, password FROM `usuarios`")
+            cursor.execute("SELECT username, password, token FROM `usuarios`")
             todas_las_cuentas = cursor.fetchall()
+            cursor.lastrowid
         connection.close()
 
         correct_usuario = None
@@ -106,7 +113,7 @@ def login():
             return jsonify({"message": "Invalid credentials"}), 400
 
         if _password == correct_usuario[1]:
-            return jsonify({"message": "logged in"}), 200
+            return jsonify({"message": "logged in", "token": correct_usuario[2]}), 200
         else:
             return jsonify({"message": "Invalid credentials"}), 400
 
@@ -118,11 +125,29 @@ def delete_user():
 
 @app.route("/reset-pass/<username>", methods=["PATCH"])
 def reset_pass(username):
-    for user in db:
-        if username == user["name"]:
-            new_pass = request.get_json()
-            user["password"] = new_pass["password"]
-            return str(user["password"]), 200
+    json = request.get_json()
+    new_password = json["new_password"]
+
+    if json:
+        connection = mysql()
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"SELECT id, username, password FROM `usuarios` WHERE username = '{username}'"
+            )
+            existing = cursor.fetchone()
+
+        if existing:
+            existing[2] == new_password
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    f"UPDATE `usuarios` SET `password` = '{new_password}' WHERE `usuarios`.`id` = '{existing[0]}' "
+                )
+                connection.commit()
+                connection.close()
+                return ({"message": "password changed"}), 200
+
+        else:
+            return ({"message": "this user does not exist"}), 400
 
 
 if __name__ == "__main__":
