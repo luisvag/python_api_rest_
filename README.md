@@ -1,6 +1,7 @@
 # Flask REST API + React
 
 Project aiming to learn about backend/frontend process to login
+By luisvag, Gabriel Marcano
 
 ## API Reference
 
