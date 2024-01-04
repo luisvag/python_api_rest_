@@ -10,7 +10,7 @@ fake.add_provider(phone_number)
 fake.add_provider(internet)
 
 """
-GET = OBTENER INFO
+GET = OBTENER INFOs
 POST = CREAR INFO
 PUT = ACTUALIZAR INFO
 DELETE = DELETE
@@ -31,18 +31,18 @@ def get_users():
         users = cursor.fetchall()
     connection.close()
 
-    dictList = []
+    user_list = []
 
-    for userTuple in users:
+    for user_tuple in users:
         user = {}
-        user["id"] = userTuple[0]
-        user["username"] = userTuple[1]
-        user["password"] = userTuple[2]
-        user["email"] = userTuple[3]
+        user["id"] = user_tuple[0]
+        user["username"] = user_tuple[1]
+        user["password"] = user_tuple[2]
+        user["email"] = user_tuple[3]
 
-        dictList.append(user)
+        user_list.append(user)
 
-    return jsonify(dictList), 200
+    return jsonify(user_list), 200
 
 
 @app.route("/get-user/<id>")
@@ -50,13 +50,13 @@ def get_user(id):
     connection = mysql()
     with connection.cursor() as cursor:
         cursor.execute(f"SELECT * FROM `usuarios` WHERE id = {id}")
-        userTuple = cursor.fetchone()
+        user_tuple = cursor.fetchone()
     connection.close()
 
     user = {}
-    user["id"] = userTuple[0]
-    user["username"] = userTuple[1]
-    user["email"] = userTuple[2]
+    user["id"] = user_tuple[0]
+    user["username"] = user_tuple[1]
+    user["email"] = user_tuple[2]
 
     return jsonify(user), 200
 
@@ -70,7 +70,7 @@ def create_user():
         existing_user = cursor.fetchone()
         if existing_user:
             connection.close()
-            return f"User already exist", 400
+            return "User already exist", 400
 
         cursor.execute(
             f"INSERT INTO `usuarios` (`id`, `username`, `password`, `email`) VALUES ('{data['id']}', '{data['username']}', '{data['password']}', '{data['email']}')"
